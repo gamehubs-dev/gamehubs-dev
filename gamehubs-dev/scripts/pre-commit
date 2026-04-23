@@ -1,0 +1,15 @@
+#!/bin/bash
+# Pre-commit hook
+
+echo "Running pre-commit checks..."
+
+# Run lint
+npm run lint
+
+# Run typecheck
+npm run typecheck
+
+# Run tests
+npm run test -- --passWithNoTests
+
+echo "Pre-commit checks complete!"

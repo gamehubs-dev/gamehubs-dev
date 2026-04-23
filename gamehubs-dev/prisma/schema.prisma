@@ -1,0 +1,237 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Markets
+model Market {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  region      String
+  countryCode String   @unique
+  flagEmoji   String
+  isActive    Boolean  @default(true)
+  
+  // Market Data
+  marketSize    Decimal? @db.Decimal(15, 2)
+  growthRate    Decimal? @db.Decimal(5, 2)
+  playerCount   Int?
+  lastUpdated   DateTime @default(now())
+  
+  // Relations
+  regulations   Regulation[]
+  paymentMethods MarketPaymentMethod[]
+  reports       Report[]
+  trends        Trend[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([region])
+  @@index([countryCode])
+}
+
+model Regulation {
+  id          String   @id @default(cuid())
+  marketId    String
+  market      Market   @relation(fields: [marketId], references: [id])
+  
+  type        String   // KYC, AML, Licensing, ResponsibleGaming
+  title       String
+  description String   @db.Text
+  content     String   @db.Text
+  
+  regulator   String?
+  effectiveDate DateTime?
+  lastUpdated DateTime @default(now())
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([marketId])
+  @@index([type])
+}
+
+model PaymentMethod {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  type        String   // wallet, bank, card, crypto
+  logo        String?
+  isActive    Boolean  @default(true)
+  
+  markets     MarketPaymentMethod[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model MarketPaymentMethod {
+  id              String   @id @default(cuid())
+  marketId        String
+  paymentMethodId String
+  market          Market         @relation(fields: [marketId], references: [id])
+  paymentMethod   PaymentMethod  @relation(fields: [paymentMethodId], references: [id])
+  
+  transactionShare Decimal? @db.Decimal(5, 2)
+  isPopular       Boolean  @default(false)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([marketId, paymentMethodId])
+}
+
+// Content
+model Report {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  description String   @db.Text
+  content     String   @db.Text
+  
+  category    String   // market-analysis, regulatory, investment
+  region      String
+  marketId    String?
+  market      Market?  @relation(fields: [marketId], references: [id])
+  
+  author      String?
+  publishedAt DateTime
+  updatedAt   DateTime
+  
+  // SEO
+  metaTitle   String?
+  metaDescription String?
+  
+  // Stats
+  viewCount   Int      @default(0)
+  
+  tags        ReportTag[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([category])
+  @@index([region])
+  @@index([publishedAt])
+}
+
+model ReportTag {
+  id      String @id @default(cuid())
+  name    String @unique
+  reports Report[]
+}
+
+model Trend {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  description String   @db.Text
+  content     String   @db.Text
+  
+  category    String   // technology, consumer, regulatory, payment
+  marketId    String?
+  market      Market?  @relation(fields: [marketId], references: [id])
+  
+  publishedAt DateTime
+  updatedAt   DateTime
+  
+  metaTitle       String?
+  metaDescription String?
+  viewCount       Int      @default(0)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([category])
+}
+
+model GlossaryTerm {
+  id          String   @id @default(cuid())
+  term        String   @unique
+  definition  String   @db.Text
+  category    String   // gaming, financial, technical, regulatory
+  relatedTerms String[]
+  examples    String[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([category])
+}
+
+// Users
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  image         String?
+  role          String    @default("user") // user, editor, admin
+  emailVerified DateTime?
+  
+  accounts      Account[]
+  sessions      Session[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Analytics
+model PageView {
+  id          String   @id @default(cuid())
+  slug        String
+  referrer    String?
+  userAgent   String?
+  country     String?
+  createdAt   DateTime @default(now())
+  
+  @@index([slug])
+  @@index([createdAt])
+}
+
+// API Keys
+model ApiKey {
+  id          String   @id @default(cuid())
+  name        String
+  key         String   @unique
+  userId      String?
+  
+  rateLimit   Int      @default(100)
+  isActive    Boolean  @default(true)
+  
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime?
+  lastUsedAt  DateTime?
+}
