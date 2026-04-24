@@ -511,8 +511,8 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 - 🐦 **Twitter**: [@GameHubsTop](https://x.com/GameHubsTop)
 - 💼 **LinkedIn**: [GameHubs Research](https://www.linkedin.com/in/zampa-gamehubs-top-368590405/)
 - 📺 **YouTube**: [@GameHubsTop](https://www.youtube.com/@GameHubsTop)
-- 🎵 **TikTok:[@gamehubs_official](https://www.tiktok.com/@gamehubs_official)
-- 💻 GitHub: [gamehubs-dev](https://github.com/gamehubs-dev/gamehubs-dev/tree/main/gamehubs-dev)
+- 🎵 **TikTok**:[@gamehubs_official](https://www.tiktok.com/@gamehubs_official)
+- 💻 **GitHub**: [gamehubs-dev](https://github.com/gamehubs-dev/gamehubs-dev/tree/main/gamehubs-dev)
 
 ---
 
